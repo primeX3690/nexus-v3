@@ -1,0 +1,23 @@
+# NEXUS v3 - dependencies
+# Deliberately minimal: no torch/jax/tensorflow. Every neural component
+# (SNN, Mamba SSM, PPO's MLP+backprop) is hand-implemented in numpy so
+# the whole system runs on CPU-only hardware (developed on a Ryzen 3, 8GB RAM).
+
+numpy>=1.24
+scipy>=1.10
+gymnasium>=0.29     # environment API only - NavigationEnv is custom, no heavy gym dependencies pulled in
+matplotlib>=3.8     # only used by benchmarks/run_full_benchmark.py to generate evidence plots
+pymavlink>=2.4      # interface/mavlink_bridge.py - real, tested (UDP loopback) MAVLink bridge for PX4/ArduPilot
+pytest>=7.4         # dev/test only
+
+# Optional, NOT required for any demo or test in this repo:
+# pybullet>=3.2      # only used if you explicitly pass backend="pybullet" to PhysicsEnv.
+#                      Warning: compiles an ~80MB C++ source tree, can take 10+ minutes
+#                      on constrained hardware. environment/pybullet_env.py's default
+#                      "lightweight" backend needs no compilation and is what every
+#                      demo/test in this repo actually uses.
+#
+# ROS2 / rclpy: NOT pip-installable at all - requires a full ROS2 system
+#   install (apt packages + environment sourcing on Ubuntu). interface/
+#   hardware_abstraction.py's ROS2Backend defines the contract but is not
+#   implemented; see architecture/ARCHITECTURE.md's roadmap section.

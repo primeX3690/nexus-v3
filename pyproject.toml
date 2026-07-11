@@ -1,0 +1,21 @@
+[project]
+name = "nexus-v3"
+version = "3.0.0"
+description = "CPU-only, zero-LLM autonomous robotics stack: genetic programming, spiking neural networks, Mamba-inspired world models, neuro-symbolic reasoning, hand-rolled PPO, and swarm intelligence."
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "gymnasium>=0.29",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4"]
+pybullet = ["pybullet>=3.2"]  # optional high-fidelity physics backend - see environment/pybullet_env.py
+
+[build-system]
+requires = ["setuptools>=65"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["core*", "brain*", "simulation*", "environment*", "safety*", "training*", "utils*"]

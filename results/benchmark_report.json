@@ -1,0 +1,36 @@
+{
+  "genetic_evolution": {
+    "wall_clock_seconds": 1.267,
+    "generations_run": 50,
+    "final_best_fitness": 0.9714,
+    "final_correctness": 1.0,
+    "evolved_source": "def solve(a, b):\n    return a + b",
+    "mutation_lineage": [
+      "arithmetic_op_swap"
+    ]
+  },
+  "ppo_gradient_check": {
+    "max_relative_gradient_error": {
+      "W1": 1.337525225925953e-10,
+      "b1": 4.1261900244939514e-11,
+      "W2": 8.238470574035587e-12,
+      "b2": 5.872552226363657e-12
+    },
+    "verdict": "PASS (all < 1e-4)"
+  },
+  "ppo_training": {
+    "wall_clock_seconds": 0.908,
+    "n_updates": 25,
+    "total_env_steps": 3200,
+    "first_5_updates_mean_reward": -5.438,
+    "last_5_updates_mean_reward": -4.367
+  },
+  "swarm_fault_tolerance": {
+    "wall_clock_seconds": 0.099,
+    "steps_simulated": 80,
+    "agents_killed_at_step": 20,
+    "failure_detected_at_step": 29,
+    "detection_latency_steps": 9,
+    "final_alive_count": 4
+  }
+}
