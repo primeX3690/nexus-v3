@@ -1,3 +1,4 @@
+
 import sys
 import time
 from pathlib import Path
@@ -75,6 +76,22 @@ def test_mavlink_bridge_real_loopback_roundtrip():
     finally:
         vehicle.close()
         gcs.close()
+
+
+def test_sitl_backend_handles_no_sitl_running():
+    """SITLBackend must degrade gracefully (not crash) when no SITL
+    instance is actually running - this IS testable without SITL
+    installed, unlike actually flying it."""
+    from interface.hardware_abstraction import SITLBackend
+
+    backend = SITLBackend("udp:127.0.0.1:14599", connect_timeout=2.0)
+    assert backend.is_connected() is False
+
+    obs = backend.get_observation()
+    assert obs.shape == (6,)
+
+    backend.send_action(4)  # must not raise even though disconnected
+    backend.close()
 
 
 if __name__ == "__main__":

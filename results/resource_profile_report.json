@@ -1,0 +1,69 @@
+{
+  "system_info": {
+    "physical_cores": 4,
+    "logical_cores": 8,
+    "total_ram_gb": 7.34
+  },
+  "profiles": [
+    {
+      "label": "Mamba SSM (2000-step sequential scan, d_model=64)",
+      "wall_clock_seconds": 0.4247,
+      "tracemalloc_peak_mb": 2.772,
+      "process_rss_before_mb": 32.93,
+      "process_rss_after_mb": 35.95,
+      "process_rss_delta_mb": 3.02,
+      "cpu_user_seconds": 0.375,
+      "cpu_system_seconds": 0.0312,
+      "result_summary": {
+        "sequence_length": 2000,
+        "d_model": 64,
+        "output_shape": [
+          2000,
+          64
+        ]
+      }
+    },
+    {
+      "label": "PPO training (hand-rolled MLP+backprop, 15 updates x 128 steps)",
+      "wall_clock_seconds": 2.1603,
+      "tracemalloc_peak_mb": 0.281,
+      "process_rss_before_mb": 41.71,
+      "process_rss_after_mb": 42.04,
+      "process_rss_delta_mb": 0.32,
+      "cpu_user_seconds": 1.8906,
+      "cpu_system_seconds": 0.0938,
+      "result_summary": {
+        "n_updates": 15,
+        "total_env_steps": 1920
+      }
+    },
+    {
+      "label": "5-robot swarm (200 steps: boids + stigmergy + fault tolerance)",
+      "wall_clock_seconds": 1.2746,
+      "tracemalloc_peak_mb": 0.034,
+      "process_rss_before_mb": 42.16,
+      "process_rss_after_mb": 42.21,
+      "process_rss_delta_mb": 0.05,
+      "cpu_user_seconds": 1.1719,
+      "cpu_system_seconds": 0.0469,
+      "result_summary": {
+        "n_agents": 5,
+        "steps_simulated": 200
+      }
+    },
+    {
+      "label": "Genetic evolution (population=25, up to 50 generations)",
+      "wall_clock_seconds": 5.757,
+      "tracemalloc_peak_mb": 1.863,
+      "process_rss_before_mb": 42.58,
+      "process_rss_after_mb": 44.29,
+      "process_rss_delta_mb": 1.7,
+      "cpu_user_seconds": 5.3594,
+      "cpu_system_seconds": 0.1094,
+      "result_summary": {
+        "generations_run": 50,
+        "final_fitness": 0.9714
+      }
+    }
+  ]
+}

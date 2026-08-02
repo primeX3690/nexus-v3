@@ -1,3 +1,4 @@
+
 # NEXUS v3 - dependencies
 # Deliberately minimal: no torch/jax/tensorflow. Every neural component
 # (SNN, Mamba SSM, PPO's MLP+backprop) is hand-implemented in numpy so
@@ -8,6 +9,7 @@ scipy>=1.10
 gymnasium>=0.29     # environment API only - NavigationEnv is custom, no heavy gym dependencies pulled in
 matplotlib>=3.8     # only used by benchmarks/run_full_benchmark.py to generate evidence plots
 pymavlink>=2.4      # interface/mavlink_bridge.py - real, tested (UDP loopback) MAVLink bridge for PX4/ArduPilot
+psutil>=5.9         # benchmarks/profile_resources.py - real RAM/CPU measurement
 pytest>=7.4         # dev/test only
 
 # Optional, NOT required for any demo or test in this repo:

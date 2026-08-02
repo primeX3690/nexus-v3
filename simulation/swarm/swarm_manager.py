@@ -1,3 +1,4 @@
+
 """
 simulation/swarm/swarm_manager.py
 
@@ -15,15 +16,21 @@ import numpy as np
 from simulation.swarm.swarm_agent import SwarmAgent
 from simulation.swarm.stigmergy_map import StigmergyMap
 from simulation.swarm.fault_tolerance import FaultToleranceManager
+from simulation.swarm.network_chaos import NetworkChaosInjector
 from utils.config import SwarmConfig
 from utils.seeding import get_rng
 
 
 class SwarmManager:
     def __init__(self, config: SwarmConfig | None = None, world_size: tuple = (50, 50),
-                 seed_stream: str = "swarm_manager"):
+                 seed_stream: str = "swarm_manager", chaos: NetworkChaosInjector | None = None):
+        """chaos: optional NetworkChaosInjector - if provided, heartbeats
+        route through it (random drop + delay) instead of arriving
+        instantly and reliably. None (default) preserves the original
+        clean-network behavior every existing test/demo relies on."""
         self.config = config or SwarmConfig()
         self.world_size = world_size
+        self.chaos = chaos
         rng = get_rng(seed_stream)
 
         self.agents: list[SwarmAgent] = []
@@ -50,13 +57,26 @@ class SwarmManager:
         alive_agents = [a for a in self.agents if a.alive]
 
         # heartbeat exchange: every alive agent that should broadcast this
-        # step is "heard" by every other alive agent's fault manager.
-        for a in alive_agents:
-            fm = self.fault_managers[a.agent_id]
-            if fm.should_broadcast(self.step_count):
-                for other in alive_agents:
-                    if other.agent_id != a.agent_id:
-                        self.fault_managers[other.agent_id].receive_heartbeat(a.agent_id, self.step_count)
+        # step is "heard" by every other alive agent's fault manager -
+        # UNLESS a chaos injector is active, in which case delivery is
+        # probabilistic and delayed, like a real lossy link.
+        if self.chaos is None:
+            for a in alive_agents:
+                fm = self.fault_managers[a.agent_id]
+                if fm.should_broadcast(self.step_count):
+                    for other in alive_agents:
+                        if other.agent_id != a.agent_id:
+                            self.fault_managers[other.agent_id].receive_heartbeat(a.agent_id, self.step_count)
+        else:
+            for a in alive_agents:
+                fm = self.fault_managers[a.agent_id]
+                if fm.should_broadcast(self.step_count):
+                    for other in alive_agents:
+                        if other.agent_id != a.agent_id:
+                            self.chaos.send(a.agent_id, other.agent_id, self.step_count)
+            for msg in self.chaos.deliverable_messages(self.step_count):
+                if msg["to_id"] in self.fault_managers:
+                    self.fault_managers[msg["to_id"]].receive_heartbeat(msg["from_id"], msg["sent_step"])
 
         newly_dead_by_agent = {}
         for a in alive_agents:

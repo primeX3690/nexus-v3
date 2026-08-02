@@ -80,5 +80,40 @@ def test_mcts_finds_optimal_action():
     assert best_idx == 2
 
 
+def test_mcts_reaches_distant_goal_with_distance_based_reward():
+    """Regression test for a real bug found and fixed: a distance-based
+    reward (reward = distance_before - distance_after, i.e. telescoping
+    only within short rollouts, not across the whole trajectory like
+    the position-absolute reward in the test above) exposed a
+    backpropagation ordering bug where a node's own edge_reward never
+    correctly reached its own Q-value, making sibling actions
+    indistinguishable and causing MCTS to sometimes move AWAY from a
+    distant goal. Confirmed fixed: the planner now reaches an exact
+    goal position with a deterministic, distance-based reward."""
+    set_global_seed(3)
+
+    class ToyWM:
+        def reset(self): pass
+        def predict_next(self, s, a): return s + a
+
+    goal = np.array([12.0, -3.0])
+    actions = [np.array([-1.0, 0.0]), np.array([1.0, 0.0]),
+               np.array([0.0, -1.0]), np.array([0.0, 1.0]), np.array([0.0, 0.0])]
+
+    def reward_fn(state, action, next_state):
+        return np.linalg.norm(state - goal) - np.linalg.norm(next_state - goal)
+
+    planner = MCTSPlanner(ToyWM(), actions, reward_fn, rollout_depth=2)
+    position = np.array([0.0, 0.0])
+    for _ in range(15):
+        best_idx, _ = planner.plan(position, n_simulations=200)
+        position = position + actions[best_idx]
+
+    assert np.linalg.norm(position - goal) < 1.0, (
+        f"MCTS should reach near the distant goal with a correct distance-based "
+        f"reward signal, ended at {position} vs goal {goal}"
+    )
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))

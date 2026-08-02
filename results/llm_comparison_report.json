@@ -1,0 +1,25 @@
+{
+  "nexus_measured": {
+    "n_trials": 2000,
+    "mean_ms": 0.10203015012666583,
+    "p50_ms": 0.0950000248849392,
+    "p99_ms": 0.16530303575564176,
+    "decisions_per_sec_single_core": 9801.02448892357,
+    "requires_network": false,
+    "marginal_cost_usd_per_decision": 0.0,
+    "cpu_info": "AMD64 Family 23 Model 104 Stepping 1, AuthenticAMD"
+  },
+  "llm_baseline_cited": {
+    "typical_latency_ms_range": [
+      200,
+      2000
+    ],
+    "typical_cost_usd_per_call_range": [
+      0.0001,
+      0.01
+    ],
+    "requires_network": true,
+    "source_note": "Publicly published typical ranges for hosted LLM API calls with short prompts, general industry knowledge as of ~2025/2026 public pricing pages - NOT measured in this environment (no network/API access here). Treat as an order-of-magnitude reference, not a precise benchmark."
+  },
+  "approx_latency_speedup_factor": 10781.1
+}

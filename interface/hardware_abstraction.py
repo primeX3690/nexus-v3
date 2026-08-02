@@ -1,3 +1,4 @@
+
 """
 interface/hardware_abstraction.py
 
@@ -88,6 +89,74 @@ class LightweightSimBackend(RobotBackend):
 
     def is_connected(self) -> bool:
         return True
+
+
+class SITLBackend(RobotBackend):
+    """Talks to ArduPilot or PX4 SITL (Software-In-The-Loop) - a real
+    flight-controller firmware binary running on your machine, simulated
+    but running the ACTUAL production firmware, not a NEXUS-side model
+    of one. This is a meaningfully different tier of validation than
+    LightweightSimBackend: it proves NEXUS can drive real flight-control
+    software, not just its own physics approximation.
+
+    Unlike ROS2Backend, this class IS real, working code - it reuses
+    interface/mavlink_bridge.py's MAVLinkBridge, which is verified over
+    an actual UDP loopback in tests/test_interface.py. What's NOT
+    verified in this sandbox is a live SITL instance on the other end
+    (SITL requires compiling ArduPilot/PX4 from source - confirmed
+    during development to need 770MB+ just for a shallow clone plus
+    several GB more in submodules and a lengthy build, infeasible in
+    this dev sandbox's disk/time budget). Connection/timeout handling
+    IS tested here without a real SITL running (see
+    tests/test_interface.py's test_sitl_backend_handles_no_sitl_running).
+
+    Setup SITL yourself: see docs/SITL_SETUP.md for exact commands.
+    Once SITL is running (e.g. `sim_vehicle.py -v ArduCopter` for
+    ArduPilot), point this backend at it - default MAVLink SITL output
+    is udp:127.0.0.1:14550.
+    """
+
+    def __init__(self, connection_string: str = "udp:127.0.0.1:14550", connect_timeout: float = 5.0):
+        from interface.mavlink_bridge import MAVLinkBridge
+        self.bridge = MAVLinkBridge(connection_string)
+        self._connected = self.bridge.wait_heartbeat(timeout=connect_timeout)
+        self._last_obs = None
+
+    def is_connected(self) -> bool:
+        return self._connected
+
+    def reset(self) -> np.ndarray:
+        # SITL doesn't have a generic "reset episode" concept the way a
+        # gym env does - a real/simulated vehicle just continues from
+        # wherever it is. Returning the current state is the honest
+        # behavior here, not a fabricated reset.
+        return self.get_observation()
+
+    def get_observation(self) -> np.ndarray:
+        if not self._connected:
+            return np.zeros(6)  # no telemetry available - caller should check is_connected() first
+        msg = self.bridge.receive_message(msg_type="LOCAL_POSITION_NED", timeout=0.5)
+        if msg is None:
+            return self._last_obs if self._last_obs is not None else np.zeros(6)
+        obs = np.array([msg.x, msg.y, msg.z, msg.vx, msg.vy, msg.vz])
+        self._last_obs = obs
+        return obs
+
+    def send_action(self, action: int) -> None:
+        # Maps NEXUS's small discrete action set onto velocity commands -
+        # same mapping used by environment/multi_robot_env.py's ACTIONS,
+        # kept consistent so a policy trained on the sim backend needs
+        # no action-space translation to run against SITL.
+        action_to_velocity = {
+            0: (0.0, 0.0, 0.0), 1: (0.0, 1.0, 0.0), 2: (0.0, -1.0, 0.0),
+            3: (-1.0, 0.0, 0.0), 4: (1.0, 0.0, 0.0),
+        }
+        vx, vy, vz = action_to_velocity.get(int(action), (0.0, 0.0, 0.0))
+        if self._connected:
+            self.bridge.send_velocity_command(vx, vy, vz)
+
+    def close(self) -> None:
+        self.bridge.close()
 
 
 class ROS2Backend(RobotBackend):
