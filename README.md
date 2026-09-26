@@ -62,6 +62,23 @@ python3 -m benchmarks.compare_vs_llm_baseline   # results/LLM_COMPARISON.md + 1 
 Every numerically risky module in this repo was checked by *running* it,
 not just reading the code back:
 
+- **Real vendor-datasheet sensor noise**: IMU (ICM-20948) and LiDAR
+  (RPLIDAR A1M8) noise models built from published datasheet noise
+  densities/resolution specs, not generic Gaussian fudge factors -
+  `interface/sensor_noise_models.py`.
+- **Real ARM Cortex-M3 cross-compile + QEMU run**: the policy MLP +
+  constitutional safety veto cross-compiled with `arm-none-eabi-gcc` and
+  run under `qemu-system-arm`, output verified bit-for-bit against the
+  Python original, real instruction-count/timing measured via singlestep
+  tracing - `embedded/README.md`.
+- **Real multi-process, multi-socket swarm**: 5 independent OS processes
+  (real PIDs) coordinating only via real UDP sockets; one process really
+  SIGKILLed mid-run, survivors detect it via real socket silence -
+  `demo/run_multi_process_swarm.py`.
+- See `REALISM_UPGRADES.md` for the full status of all 6 requested
+  realism upgrades, including exact laptop-side commands for the three
+  (ArduPilot/PX4 SITL, real webcam feed, `tc netem`) that need real
+  hardware/kernel features this dev sandbox doesn't have.
 - **AST mutator**: all 12 mutation operators confirmed to always produce
   syntactically valid Python (100+ mutation trials).
 - **Fitness scorer**: verified correct/incorrect/crashing/infinite-loop

@@ -1,0 +1,42 @@
+NEXUS v3 — CHANGES-ONLY PACKAGE
+================================
+
+Ye poora repo nahi hai — sirf NEW ya MODIFIED files/folders hain, apne
+`nexus-v3` repo folder ke exact same relative paths ke saath. Bas is zip
+ko extract karke saari cheezein apne repo ke root mein copy-paste (merge)
+kar do — overwrite karne se koi purana kaam nahi tootega.
+
+NEW folders/files (pehle nahi the):
+  embedded/                              <- pura naya folder (Cortex-M3 + QEMU port)
+  simulation/swarm/multi_process_agent.py
+  demo/run_multi_process_swarm.py
+  tests/test_multi_process_swarm.py
+  tests/test_sensor_noise_models.py
+  interface/sensor_noise_models.py
+  REALISM_UPGRADES.md
+
+MODIFIED files (already existed, ab updated hain — inko overwrite karna
+theek hai, purana method `sense()` hata nahi, sirf naya method add hua
+hai `sense_with_datasheet_noise()`):
+  brain/perception/sensor_array.py
+  README.md
+
+Merge karne ke baad (apne laptop pe, repo root se):
+------------------------------------------------
+  pip install -r requirements.txt
+  python3 -m pytest tests/ -q
+
+61/61 tests pass hone chahiye (54 purane + 7 naye).
+
+Embedded/QEMU part chalane ke liye apne laptop pe zaroorat:
+  sudo apt install gcc-arm-none-eabi qemu-system-arm
+phir embedded/README.md follow karo (exact commands wahin hain).
+
+Git commit karne ke liye:
+  git add embedded/ interface/sensor_noise_models.py \
+    simulation/swarm/multi_process_agent.py \
+    demo/run_multi_process_swarm.py \
+    tests/test_multi_process_swarm.py tests/test_sensor_noise_models.py \
+    REALISM_UPGRADES.md brain/perception/sensor_array.py README.md
+  git commit -m "Add 3 realism upgrades: datasheet sensor noise, Cortex-M3/QEMU SIL port, multi-process real-socket swarm"
+  git push
